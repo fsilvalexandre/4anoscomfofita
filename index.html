@@ -70,6 +70,7 @@
   details p { margin: .7rem 0 0; color: var(--muted); }
   .gallery { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
   .gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 6px; display: block; background: var(--bg2); }
+  .videos { display: flex; flex-wrap: wrap; gap: .8rem; }
   a.pill { display: inline-block; color: var(--accent); border: 1px solid var(--accent); padding: .8rem 1.4rem; border-radius: 999px; text-decoration: none; }
   .crush { position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: max(1.5rem, env(safe-area-inset-top, 0px)) 1.5rem max(1.5rem, env(safe-area-inset-bottom, 0px)); overflow-y: auto; background: rgba(8, 12, 30, .97); animation: dim .4s ease both; }
   .crush::after { content: ""; position: absolute; inset: 0; background: #ff7a90; opacity: 0; pointer-events: none; animation: flash .6s .9s ease; }
@@ -163,10 +164,14 @@
   const intro = "Há um pequeno puzzle só para ti. Resolve-os para chegares ao destino: O meu coração!";
   // tipos: "text" (resposta escrita), "choice" (escolha múltipla), "order" (ordenar do mais antigo ao mais recente)
   const levels = [
+
+ { type: "text", q: "Qual é o nome da terra onde cresci?", answers: ["Moita da Roda"], hint: "",
+      reward: { when: "", title: "Muito bem fofinha!", text: "Continua assim!"} },
+
     { type: "text", q: "Em que dia, ano e mês conheci os teus pais?", answers: ["08/07/2023"], hint: "xx/xx/xxxx.",
-      reward: { when: "Setembro 2022", title: "Como  começamos", text: "A memória deste ano.", photos: [
+      reward: { when: "Setembro 2022", title: "Como  começamos", text: "Começamos aqui, fofinha:", photos: [
   "fotos/ano1_01.jpg",
-  "fotos/ano1_02.jpg",
+  "fotos/ano1_02.jpg",  
   "fotos/ano1_03.jpg",
   "fotos/ano1_04.jpg",
   "fotos/ano1_05.jpg",
@@ -181,7 +186,7 @@
   "fotos/ano1_14.jpg"
 ] } },
     { type: "choice", q: "Qual foi a nossa pior viagem juntos?", options: ["Vannes", "Vannes", "Vannes", "Zermatt"], correct: 0, hint: "lol.",
-      reward: { when: "2023", title: "O nosso segundo ano juntos", text: "A memória deste ano.", photos: [
+      reward: { when: "2023", title: "O nosso segundo ano juntos", text: "2 anos, passaram a voar!!!", photos: [
   "fotos/ano2_01.jpg",
   "fotos/ano2_02.jpg",
   "fotos/ano2_03.jpg",
@@ -218,7 +223,7 @@
   "fotos/ano2_34.jpg"
 ] } },
     { type: "order", q: "Põe estes momentos por ordem, do mais antigo ao mais recente.", items: ["Termos a nossa primeira 'discussão'", "Dizer: te quiero", "Coca-Cola", "Viver juntos"], hint: "Começa pelo mais fácil.",
-      reward: { when: "2024", title: "O nosso segundo ano juntos", text: "A memória deste ano.", photos: [
+      reward: { when: "2024", title: "O nosso terceiro ano juntos", text: "Aiii, te quiero <3.", photos: [
   "fotos/ano3_01.jpg",
   "fotos/ano3_02.jpg",
   "fotos/ano3_03.jpg",
@@ -251,7 +256,7 @@
   "fotos/ano3_30.jpg"
 ] } },
     { type: "text", q: "Quem era a minha celebridade crush de infância?", answers: ["Selena Gomez"], hint: ":D",
-      reward: { when: "2025", title: "Título do ano 4", text: "A memória deste ano.", photos: [
+      reward: { when: "2025", title: "O nosso quarto ano juntos", text: "Fofinha, já passaram 4!?!?!? Como é possível! ", photos: [
   "fotos/ano4_01.jpg",
   "fotos/ano4_02.jpg",
   "fotos/ano4_03.jpg",
@@ -318,6 +323,11 @@
   const gallery = ["fotos/g1.jpg", "fotos/g2.jpg", "fotos/g3.jpg", "fotos/g4.jpg"];
   // link da playlist ("" esconde a secção)
   const playlistUrl = "";
+  // vídeos (abrem a página do pCloud noutro separador) ([] esconde a secção)
+  const videos = [
+    { t: "2 anos", url: "https://e.pcloud.link/publink/show?code=XZDhok7ZSOgL88735jbmJeDsuk4ToLlEgBRk" },
+    { t: "3 anos", url: "https://e.pcloud.link/publink/show?code=XZ1hok7ZGL5uYPvctW5hcxXkpPELcLNEOXck" }
+  ];
   // ======================
 
   const $ = id => document.getElementById(id), stage = $("stage");
@@ -420,7 +430,7 @@
 function rewardCard(r) {
   const card = el("div", "reward");
   card.append(el("p", "when", r.when), el("h2", "", r.title), el("p", "muted", r.text));
-  const list = r.photos || (r.photo ? [r.photo] : []);
+  const list = [].concat(r.photos || r.photo || []);
   if (list.length) {
     const show = el("div", "show"), imgs = show.children;
     let k = 0;
@@ -561,6 +571,16 @@ function rewardCard(r) {
     if (playlistUrl) {
       const a = el("a", "pill", "Ouvir playlist"); a.href = playlistUrl; a.target = "_blank"; a.rel = "noopener";
       sec("A nossa banda sonora", a);
+    }
+
+    if (videos.length) {
+      const v = el("div", "videos");
+      videos.forEach(x => {
+        const a = el("a", "pill", "\u25B6 " + x.t);
+        a.href = x.url; a.target = "_blank"; a.rel = "noopener";
+        v.appendChild(a);
+      });
+      sec("Os nossos videos <3", v);
     }
 
     const b = el("button", "link", "Voltar ao início"); b.style.marginTop = "3rem";
