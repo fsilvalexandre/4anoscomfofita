@@ -165,9 +165,6 @@
   // tipos: "text" (resposta escrita), "choice" (escolha múltipla), "order" (ordenar do mais antigo ao mais recente)
   const levels = [
 
- { type: "text", q: "Qual é o nome da terra onde cresci?", answers: ["Moita da Roda"], hint: "",
-      reward: { when: "", title: "Muito bem fofinha!", text: "Continua assim!"} },
-
     { type: "text", q: "Em que dia, ano e mês conheci os teus pais?", answers: ["08/07/2023"], hint: "xx/xx/xxxx.",
       reward: { when: "Setembro 2022", title: "Como  começamos", text: "Começamos aqui, fofinha:", photos: [
   "fotos/ano1_01.jpg",
@@ -185,6 +182,10 @@
   "fotos/ano1_13.jpg",
   "fotos/ano1_14.jpg"
 ] } },
+
+ { type: "text", q: "Qual é o nome da terra onde cresci?", answers: ["Moita da Roda"], hint: "",
+      reward: { when: "", title: "Muito bem fofinha!", text: "Continua assim!"} },
+
     { type: "choice", q: "Qual foi a nossa pior viagem juntos?", options: ["Vannes", "Vannes", "Vannes", "Zermatt"], correct: 0, hint: "lol.",
       reward: { when: "2023", title: "O nosso segundo ano juntos", text: "2 anos, passaram a voar!!!", photos: [
   "fotos/ano2_01.jpg",
@@ -222,6 +223,11 @@
   "fotos/ano2_33.jpg",
   "fotos/ano2_34.jpg"
 ] } },
+
+ { type: "text", q: "Quem era a minha celebridade crush de infância?", answers: ["Selena Gomez"], hint: "",
+      reward: { when: "", title: "EHEHEHHHEHE, mas agora és tu!", text: ""} },
+
+
     { type: "order", q: "Põe estes momentos por ordem, do mais antigo ao mais recente.", items: ["Termos a nossa primeira 'discussão'", "Dizer: te quiero", "Coca-Cola", "Viver juntos"], hint: "Começa pelo mais fácil.",
       reward: { when: "2024", title: "O nosso terceiro ano juntos", text: "Aiii, te quiero <3.", photos: [
   "fotos/ano3_01.jpg",
@@ -255,7 +261,11 @@
   "fotos/ano3_29.jpg",
   "fotos/ano3_30.jpg"
 ] } },
-    { type: "text", q: "Quem era a minha celebridade crush de infância?", answers: ["Selena Gomez"], hint: ":D",
+
+{ type: "text", q: "Pensa em um número de 1 a 10. Multplica por 2.  Agora  multiplica por 5. Divide o numero obtido pelo primeiro numero escolhido. Subtraie 7. Escreve o resultado para ver se advinhei o número.", answers: ["3"], hint: "",
+      reward: { when: "", title: "Sou um génio <3!", text: ""} },
+
+    { type: "text", q: "Quanto gosto de ti normalmente? De 1 a 10?", answers: ["34"], hint: ":D",
       reward: { when: "2025", title: "O nosso quarto ano juntos", text: "Fofinha, já passaram 4!?!?!? Como é possível! ", photos: [
   "fotos/ano4_01.jpg",
   "fotos/ano4_02.jpg",
@@ -307,7 +317,7 @@
   "fotos/ano4_48.jpg"
 ] } }
   ];
-  const finalTitle = "Para ti";
+  const finalTitle = "Os nossos 4 anos...";
   const finalBody = "Fofinha...Estes 4 anos juntos, têm sido uma aventura incrível <3!\n\n Tu fazes-me muito feliz, e todos os dias, tenho tanta sorte em ter-te na minha vida.\n\n Não dá para explicar a pessoa incrível que tu és, o quanto me fazes ser melhor pessoa e o quanto te admiro.\n\n Admiro-te por tudo aquilo que tu és. Como pessoa, como música e como namorada! Acompanhar-te estes últimos 4 anos têm sido os melhores 4 anos da minha vida. Ver-te a perseguir as tuas ambições pessoais e profissionais, ouvir as tuas frustações, e ouvir os teus sucessos faz-me muito feliz que o queiras continuar a partilhar comigo. Saber que queres continuar a fazer coisas comigo, e a partilhar a tua vida comigo, é a melhor prenda que posso ter.\n\n Quero estar sempre contigo, e sei, que muitas vezes tenho que me ir embora de Basel para trabalho, mas estou sempre a todo o momento a morrer de saudades tuas. Mal posso esperar para ver o que o futuro nos reserva (talvez casamento??? 😂)\n\nTe quiero fofinha, e sou feliz por estar contigo. <3";
 
   // pequenas coisas: título curto + texto que aparece ao tocar
