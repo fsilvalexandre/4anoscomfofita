@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101a3a">
+<meta name="color-scheme" content="dark">
+<meta name="robots" content="noindex, nofollow">
+<title>O labirinto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #101a3a; --bg2: #18254f; --text: #f1ecff; --muted: #b4b9d9;
+    --accent: #ffb59e; --line: #34447e; --ok: #9be3b0;
+    --serif: "Young Serif", Georgia, serif;
+    --sans: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  *, *::before, *::after { box-sizing: inherit; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 1.05rem/1.6 var(--sans); min-height: 100vh; min-height: 100dvh; -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; }
+  main { max-width: 32rem; margin: 0 auto; padding: 1.2rem 1.3rem 4rem; }
+  h1, h2 { font-family: var(--serif); font-weight: 400; line-height: 1.15; margin: 0 0 1rem; }
+  h1 { font-size: clamp(4rem, 22vw, 7rem); }
+  h2 { font-size: 1.6rem; }
+  p { margin: 0 0 1rem; }
+  .muted { color: var(--muted); }
+  .dots { display: flex; gap: .5rem; margin-bottom: 2rem; align-items: center; }
+  .dots i { width: .7rem; height: .7rem; border-radius: 50%; border: 2px solid var(--line); }
+  .dots i.done { background: var(--accent); border-color: var(--accent); }
+  .dots i.now { border-color: var(--accent); }
+  .dots span { margin-left: auto; color: var(--muted); font-size: .9rem; }
+  button, input {
+    font: inherit; border-radius: 999px; border: 2px solid var(--line);
+    background: transparent; color: var(--text); padding: .75rem 1.3rem;
+  }
+  button { cursor: pointer; touch-action: manipulation; -webkit-user-select: none; user-select: none; }
+  button.main { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 500; }
+  button.link { border: 0; padding: .8rem 0; color: var(--muted); text-decoration: underline; }
+  input { width: 100%; margin-bottom: .8rem; border-radius: 10px; }
+  :is(button, input):focus-visible { outline: 3px solid var(--text); outline-offset: 3px; }
+  .opts { display: grid; gap: .6rem; margin-bottom: 1rem; }
+  .opts button { text-align: left; border-radius: 10px; }
+  .opts button.picked { border-color: var(--accent); }
+  .opts button.picked b { color: var(--accent); margin-right: .6rem; }
+  .opts button.bad { border-color: #ff8d8d; }
+  .fb { min-height: 1.6rem; color: #ff9d9d; }
+  .reward { border-left: 2px solid var(--accent); padding-left: 1.1rem; margin-bottom: 1.6rem; }
+  .reward .when { color: var(--accent); font-size: .95rem; margin: 0; }
+  .reward img { width: 100%; border-radius: 6px; display: block; margin-top: .8rem; background: var(--bg2); }
+  .reward .show { position: relative; aspect-ratio: 4/3; margin-top: .8rem; border-radius: 6px; overflow: hidden; background: var(--bg2); }
+.reward .show img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; margin: 0; opacity: 0; transition: opacity 1s ease; }
+.reward .show img.on { opacity: 1; }
+  canvas { display: block; width: 100%; max-width: min(420px, 48vh); max-width: min(420px, 48svh); aspect-ratio: 1; margin: 0 auto 1rem; touch-action: none; background: var(--bg2); border-radius: 8px; }
+  .pad { display: grid; grid-template-columns: repeat(3, 3.4rem); grid-template-rows: repeat(2, 3.4rem); gap: .4rem; justify-content: center; }
+  .pad button { padding: 0; border-radius: 12px; font-size: 1.2rem; }
+  .pad .u { grid-column: 2; } .pad .l { grid-row: 2; grid-column: 1; } .pad .d { grid-row: 2; grid-column: 2; } .pad .r { grid-row: 2; grid-column: 3; }
+  .big { font-family: var(--serif); color: var(--accent); font-size: 2.4rem; margin: 0; }
+  .section { margin-top: 3.5rem; }
+  details { border-top: 1px solid var(--line); padding: .9rem 0; }
+  details:last-of-type { border-bottom: 1px solid var(--line); }
+  summary { cursor: pointer; font-weight: 500; list-style: none; display: flex; justify-content: space-between; gap: 1rem; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; color: var(--accent); font-size: 1.3rem; line-height: 1; }
+  details[open] summary::after { content: "\2212"; }
+  summary:focus-visible, a.pill:focus-visible { outline: 3px solid var(--text); outline-offset: 3px; }
+  details p { margin: .7rem 0 0; color: var(--muted); }
+  .gallery { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+  .gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 6px; display: block; background: var(--bg2); }
+  a.pill { display: inline-block; color: var(--accent); border: 1px solid var(--accent); padding: .8rem 1.4rem; border-radius: 999px; text-decoration: none; }
+  .crush { position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: max(1.5rem, env(safe-area-inset-top, 0px)) 1.5rem max(1.5rem, env(safe-area-inset-bottom, 0px)); overflow-y: auto; background: rgba(8, 12, 30, .97); animation: dim .4s ease both; }
+  .crush::after { content: ""; position: absolute; inset: 0; background: #ff7a90; opacity: 0; pointer-events: none; animation: flash .6s .9s ease; }
+  .crush .big { margin-bottom: 1.5rem; }
+  .heart { position: relative; width: min(55vmin, 320px); height: min(55vmin, 320px); margin-bottom: 3.5rem; animation: beat .9s ease, shake .5s .9s ease; }
+  .heart svg { position: absolute; inset: 0; width: 100%; height: 100%; fill: #ff7a90; }
+  .heart .a { clip-path: polygon(0 0, 52% 0, 46% 20%, 54% 40%, 46% 60%, 54% 80%, 50% 100%, 0 100%); animation: splitL 1.6s .9s ease-in forwards; }
+  .heart .b { clip-path: polygon(52% 0, 100% 0, 100% 100%, 50% 100%, 54% 80%, 46% 60%, 54% 40%, 46% 20%); animation: splitR 1.6s .9s ease-in forwards; }
+  .crush .msg { animation: rise 1s 2.1s ease both; }
+  @keyframes dim { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes beat { 0%, 100% { transform: scale(1); } 25% { transform: scale(1.2); } 50% { transform: scale(1); } 70% { transform: scale(1.12); } }
+  @keyframes shake { 0%, 100% { transform: none; } 20% { transform: translate(-8px, 4px); } 40% { transform: translate(7px, -5px); } 60% { transform: translate(-5px, 3px); } 80% { transform: translate(4px, -2px); } }
+  @keyframes flash { 0% { opacity: 0; } 20% { opacity: .35; } 100% { opacity: 0; } }
+  @keyframes splitL { 0% { transform: none; } 20% { transform: translate(-3%, 0) rotate(-3deg); } 100% { transform: translate(-26%, 16%) rotate(-24deg); } }
+  @keyframes splitR { 0% { transform: none; } 20% { transform: translate(3%, 0) rotate(3deg); } 100% { transform: translate(26%, 16%) rotate(24deg); } }
+  @media (prefers-reduced-motion: reduce) {
+    .crush, .crush::after, .heart, .crush .msg { animation: none; }
+    .heart .a { animation: none; transform: translate(-26%, 16%) rotate(-24deg); }
+    .heart .b { animation: none; transform: translate(26%, 16%) rotate(24deg); }
+  }
+  .fade { animation: rise 1s ease both; }
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .fade { animation: none; } }
+
+  /* LANDING PAGE: coloca a tua fotografia em fotos/fundo.jpg */
+  body.landing {
+    background: var(--bg);
+    isolation: isolate;
+  }
+  body.landing::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background:
+      linear-gradient(180deg, rgba(10, 15, 37, .58), rgba(10, 15, 37, .84)),
+      url("fotos/fundo.jpg") center / cover no-repeat,
+      var(--bg);
+    transform: scale(1.02);
+  }
+  body.landing main {
+    position: relative;
+    z-index: 1;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  body.landing #stage {
+    position: relative;
+    isolation: isolate;
+  }
+  .floating-hearts {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .floating-hearts span {
+    position: absolute;
+    bottom: -3rem;
+    color: var(--accent);
+    opacity: 0;
+    line-height: 1;
+    text-shadow: 0 0 18px rgba(255, 181, 158, .28);
+    animation: float-heart var(--duration, 12s) var(--delay, 0s) linear infinite;
+    will-change: transform, opacity;
+  }
+  @keyframes float-heart {
+    0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(.7); opacity: 0; }
+    12% { opacity: var(--heart-opacity, .55); }
+    82% { opacity: var(--heart-opacity, .55); }
+    100% { transform: translate3d(var(--drift, 24px), -115vh, 0) rotate(28deg) scale(1.15); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .floating-hearts span { animation: none; opacity: .25; bottom: auto; }
+  }
+
+</style>
+</head>
+<body>
+<main>
+  <div class="dots" id="dots" aria-hidden="true"></div>
+  <div id="stage"></div>
+</main>
+
+<script>
+  // ===== EDITA AQUI =====
+  const startDate = new Date("2022-10-18T00:00:00");
+  const intro = "Há um pequeno puzzle só para ti. Resolve-os para chegares ao destino: O meu coração!";
+  // tipos: "text" (resposta escrita), "choice" (escolha múltipla), "order" (ordenar do mais antigo ao mais recente)
+  const levels = [
+    { type: "text", q: "Em que dia, ano e mês conheci os teus pais?", answers: ["08/07/2023"], hint: "xx/xx/xxxx.",
+      reward: { when: "Setembro 2022", title: "Como  começamos", text: "A memória deste ano.", photos: [
+  "fotos/ano1_01.jpg",
+  "fotos/ano1_02.jpg",
+  "fotos/ano1_03.jpg",
+  "fotos/ano1_04.jpg",
+  "fotos/ano1_05.jpg",
+  "fotos/ano1_06.jpg",
+  "fotos/ano1_07.jpg",
+  "fotos/ano1_08.jpg",
+  "fotos/ano1_09.jpg",
+  "fotos/ano1_10.jpg",
+  "fotos/ano1_11.jpg",
+  "fotos/ano1_12.jpg",
+  "fotos/ano1_13.jpg",
+  "fotos/ano1_14.jpg"
+] } },
+    { type: "choice", q: "Qual foi a nossa pior viagem juntos?", options: ["Vannes", "Vannes", "Vannes", "Zermatt"], correct: 0, hint: "lol.",
+      reward: { when: "2023", title: "O nosso segundo ano juntos", text: "A memória deste ano.", photos: [
+  "fotos/ano2_01.jpg",
+  "fotos/ano2_02.jpg",
+  "fotos/ano2_03.jpg",
+  "fotos/ano2_04.jpg",
+  "fotos/ano2_05.jpg",
+  "fotos/ano2_06.jpg",
+  "fotos/ano2_07.jpg",
+  "fotos/ano2_08.jpg",
+  "fotos/ano2_09.jpg",
+  "fotos/ano2_10.jpg",
+  "fotos/ano2_11.jpg",
+  "fotos/ano2_12.jpg",
+  "fotos/ano2_13.jpg",
+  "fotos/ano2_14.jpg",
+  "fotos/ano2_15.jpg",
+  "fotos/ano2_16.jpg",
+  "fotos/ano2_17.jpg",
+  "fotos/ano2_18.jpg",
+  "fotos/ano2_19.jpg",
+  "fotos/ano2_20.jpg",
+  "fotos/ano2_21.jpg",
+  "fotos/ano2_22.jpg",
+  "fotos/ano2_23.jpg",
+  "fotos/ano2_24.jpg",
+  "fotos/ano2_25.jpg",
+  "fotos/ano2_26.jpg",
+  "fotos/ano2_27.jpg",
+  "fotos/ano2_28.jpg",
+  "fotos/ano2_29.jpg",
+  "fotos/ano2_30.jpg",
+  "fotos/ano2_31.jpg",
+  "fotos/ano2_32.jpg",
+  "fotos/ano2_33.jpg",
+  "fotos/ano2_34.jpg"
+] } },
+    { type: "order", q: "Põe estes momentos por ordem, do mais antigo ao mais recente.", items: ["Termos a nossa primeira 'discussão'", "Dizer: te quiero", "Coca-Cola", "Viver juntos"], hint: "Começa pelo mais fácil.",
+      reward: { when: "2024", title: "O nosso segundo ano juntos", text: "A memória deste ano.", photos: [
+  "fotos/ano3_01.jpg",
+  "fotos/ano3_02.jpg",
+  "fotos/ano3_03.jpg",
+  "fotos/ano3_04.jpg",
+  "fotos/ano3_05.jpg",
+  "fotos/ano3_06.jpg",
+  "fotos/ano3_07.jpg",
+  "fotos/ano3_08.jpg",
+  "fotos/ano3_09.jpg",
+  "fotos/ano3_10.jpg",
+  "fotos/ano3_11.jpg",
+  "fotos/ano3_12.jpg",
+  "fotos/ano3_13.jpg",
+  "fotos/ano3_14.jpg",
+  "fotos/ano3_15.jpg",
+  "fotos/ano3_16.jpg",
+  "fotos/ano3_17.jpg",
+  "fotos/ano3_18.jpg",
+  "fotos/ano3_19.jpg",
+  "fotos/ano3_20.jpg",
+  "fotos/ano3_21.jpg",
+  "fotos/ano3_22.jpg",
+  "fotos/ano3_23.jpg",
+  "fotos/ano3_24.jpg",
+  "fotos/ano3_25.jpg",
+  "fotos/ano3_26.jpg",
+  "fotos/ano3_27.jpg",
+  "fotos/ano3_28.jpg",
+  "fotos/ano3_29.jpg",
+  "fotos/ano3_30.jpg"
+] } },
+    { type: "text", q: "Quem era a minha celebridade crush de infância?", answers: ["Selena Gomez"], hint: ":D",
+      reward: { when: "2025", title: "Título do ano 4", text: "A memória deste ano.", photos: [
+  "fotos/ano4_01.jpg",
+  "fotos/ano4_02.jpg",
+  "fotos/ano4_03.jpg",
+  "fotos/ano4_04.jpg",
+  "fotos/ano4_05.jpg",
+  "fotos/ano4_06.jpg",
+  "fotos/ano4_07.jpg",
+  "fotos/ano4_08.jpg",
+  "fotos/ano4_09.jpg",
+  "fotos/ano4_10.jpg",
+  "fotos/ano4_11.jpg",
+  "fotos/ano4_12.jpg",
+  "fotos/ano4_13.jpg",
+  "fotos/ano4_14.jpg",
+  "fotos/ano4_15.jpg",
+  "fotos/ano4_16.jpg",
+  "fotos/ano4_17.jpg",
+  "fotos/ano4_18.jpg",
+  "fotos/ano4_19.jpg",
+  "fotos/ano4_20.jpg",
+  "fotos/ano4_21.jpg",
+  "fotos/ano4_22.jpg",
+  "fotos/ano4_23.jpg",
+  "fotos/ano4_24.jpg",
+  "fotos/ano4_25.jpg",
+  "fotos/ano4_26.jpg",
+  "fotos/ano4_27.jpg",
+  "fotos/ano4_28.jpg",
+  "fotos/ano4_29.jpg",
+  "fotos/ano4_30.jpg",
+  "fotos/ano4_31.jpg",
+  "fotos/ano4_32.jpg",
+  "fotos/ano4_33.jpg",
+  "fotos/ano4_34.jpg",
+  "fotos/ano4_35.jpg",
+  "fotos/ano4_36.jpg",
+  "fotos/ano4_37.jpg",
+  "fotos/ano4_38.jpg",
+  "fotos/ano4_39.jpg",
+  "fotos/ano4_40.jpg",
+  "fotos/ano4_41.jpg",
+  "fotos/ano4_42.jpg",
+  "fotos/ano4_43.jpg",
+  "fotos/ano4_44.jpg",
+  "fotos/ano4_45.jpg",
+  "fotos/ano4_46.jpg",
+  "fotos/ano4_47.jpg",
+  "fotos/ano4_48.jpg"
+] } }
+  ];
+  const finalTitle = "Para ti";
+  const finalBody = "Fofinha...Estes 4 anos juntos, têm sido uma aventura incrível <3!\n\n Tu fazes-me muito feliz, e todos os dias, tenho tanta sorte em ter-te na minha vida.\n\n Não dá para explicar a pessoa incrível que tu és, o quanto me fazes ser melhor pessoa e o quanto te admiro.\n\n Admiro-te por tudo aquilo que tu és. Como pessoa, como música e como namorada! Acompanhar-te estes últimos 4 anos têm sido os melhores 4 anos da minha vida. Ver-te a perseguir as tuas ambições pessoais e profissionais, ouvir as tuas frustações, e ouvir os teus sucessos faz-me muito feliz que o queiras continuar a partilhar comigo. Saber que queres continuar a fazer coisas comigo, e a partilhar a tua vida comigo, é a melhor prenda que posso ter.\n\n Quero estar sempre contigo, e sei, que muitas vezes tenho que me ir embora de Basel para trabalho, mas estou sempre a todo o momento a morrer de saudades tuas. Mal posso esperar para ver o que o futuro nos reserva (talvez casamento??? 😂)\n\nTe quiero fofinha, e sou feliz por estar contigo. <3";
+
+  // pequenas coisas: título curto + texto que aparece ao tocar
+  const things = [
+    { t: "O teu riso", d: "Fazer-te rir é uma das coisas que mais me gosto." },
+    { t: "Quando fazes cocó", d: "Já sabes que vais receber uma chamada minha! eheeheh" },
+    { t: "Dormir contigo", d: "É tão bom! E melhor se me deres miminhos para adormecer." },
+    { t: "Viajar", d: "A melhor companhia que se tem!" },
+    { t: "Férias", d: "Podemos descansar, fazer o amor e desfrutar sem stress!" },
+    { t: "O futuro...", d: "Tenho muita vontade de fazer coisas contigo que ainda não tivemos oportunidade de fazer." }
+  ];
+  // fotos extra na pasta fotos/ ([] esconde a secção)
+  const gallery = ["fotos/g1.jpg", "fotos/g2.jpg", "fotos/g3.jpg", "fotos/g4.jpg"];
+  // link da playlist ("" esconde a secção)
+  const playlistUrl = "";
+  // ======================
+
+  const $ = id => document.getElementById(id), stage = $("stage");
+  const norm = s => String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
+  const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+  let step = 0, started = false, mazeOn = false;
+  let pranked = false;
+  try { if (location.hash === "#reset") { localStorage.removeItem("step"); localStorage.removeItem("pranked"); } step = +localStorage.getItem("step") || 0; started = step > 0; pranked = localStorage.getItem("pranked") === "1"; } catch (e) {}
+  const save = () => { try { localStorage.setItem("step", step); } catch (e) {} };
+  const next = () => { step++; save(); render(); };
+
+  function dots() {
+    const d = $("dots"); d.innerHTML = "";
+    for (let i = 0; i <= levels.length; i++) d.appendChild(el("i", i < step ? "done" : i === step ? "now" : ""));
+    const t = step < levels.length ? "Câmara " + (step + 1) + " de " + levels.length : step === levels.length ? "O labirinto" : "";
+    d.appendChild(el("span", "", t));
+    d.style.visibility = started && step <= levels.length ? "visible" : "hidden";
+  }
+
+  function render() {
+    mazeOn = false; clearInterval(timer); stage.innerHTML = ""; dots(); window.scrollTo(0, 0);
+    if (!started) return start();
+    if (step < levels.length) return puzzle(levels[step]);
+    if (step === levels.length) return maze();
+    final();
+  }
+
+  function start() {
+    document.body.classList.add("landing");
+
+    // Corações decorativos apenas na landing page.
+    const hearts = el("div", "floating-hearts");
+    hearts.setAttribute("aria-hidden", "true");
+    const heartCount = 18;
+    for (let i = 0; i < heartCount; i++) {
+      const heart = el("span", "", ["♡", "♥", "♡", "♥"][i % 4]);
+      heart.style.left = (3 + Math.random() * 94) + "%";
+      heart.style.fontSize = (14 + Math.random() * 25) + "px";
+      heart.style.setProperty("--duration", (9 + Math.random() * 10) + "s");
+      heart.style.setProperty("--delay", (-Math.random() * 18) + "s");
+      heart.style.setProperty("--drift", ((Math.random() * 100) - 50) + "px");
+      heart.style.setProperty("--heart-opacity", (0.2 + Math.random() * 0.38).toFixed(2));
+      hearts.appendChild(heart);
+    }
+    stage.appendChild(hearts);
+
+    stage.append(el("h1", "fade", "4 anos: Fofinha & Fofinho"), el("p", "muted", intro));
+    const b = el("button", "main", "Entrar"); b.onclick = () => { started = true; render(); };
+    stage.appendChild(b);
+  }
+
+  function puzzle(L) {
+    const wrap = el("div", "fade"), fb = el("p", "fb"), body = el("div");
+    wrap.append(el("h2", "", L.q), body, fb);
+    const wrong = m => { fb.textContent = m; };
+    const win = () => reward(L.reward);
+
+    if (L.type === "text") {
+      const inp = el("input"); inp.placeholder = "A tua resposta"; inp.autocomplete = "off"; inp.autocapitalize = "off"; inp.spellcheck = false; inp.setAttribute("autocorrect", "off");
+      const go = el("button", "main", "Abrir");
+      const check = () => L.answers.map(norm).includes(norm(inp.value)) ? win() : wrong("Ainda não. Tenta outra vez.");
+      go.onclick = check; inp.onkeydown = e => { if (e.key === "Enter") check(); };
+      body.append(inp, go);
+    } else if (L.type === "choice") {
+      const box = el("div", "opts");
+      L.options.forEach((o, i) => {
+        const b = el("button", "", o);
+        b.onclick = () => o === L.options[L.correct] ? win() : (b.classList.add("bad"), wrong("Não é essa."));
+        box.appendChild(b);
+      });
+      body.appendChild(box);
+    } else {
+      const total = L.items.length; let picked = [], order = L.items.map((_, i) => i);
+      do { order.sort(() => Math.random() - .5); } while (order.every((v, i) => v === i));
+      const box = el("div", "opts"), reset = el("button", "link", "Recomeçar");
+      const btns = order.map(i => {
+        const b = el("button", "", L.items[i]);
+        b.onclick = () => {
+          if (picked.includes(i)) return;
+          picked.push(i); b.classList.add("picked"); b.prepend(el("b", "", picked.length));
+          if (picked.length === total) {
+            if (picked.every((v, k) => v === k)) win();
+            else { wrong("Quase. Tenta outra vez."); setTimeout(clear, 900); }
+          }
+        };
+        box.appendChild(b); return b;
+      });
+      const clear = () => { picked = []; btns.forEach((b, k) => { b.classList.remove("picked"); b.textContent = L.items[order[k]]; }); };
+      reset.onclick = () => { wrong(""); clear(); };
+      body.append(box, reset);
+    }
+    if (L.hint) {
+      const h = el("button", "link", "Preciso de uma pista");
+      h.onclick = () => { wrong(""); h.replaceWith(el("p", "muted", "Pista: " + L.hint)); };
+      wrap.appendChild(h);
+    }
+    stage.appendChild(wrap);
+  }
+
+function rewardCard(r) {
+  const card = el("div", "reward");
+  card.append(el("p", "when", r.when), el("h2", "", r.title), el("p", "muted", r.text));
+  const list = r.photos || (r.photo ? [r.photo] : []);
+  if (list.length) {
+    const show = el("div", "show"), imgs = show.children;
+    let k = 0;
+    const paint = () => [...imgs].forEach((im, n) => im.classList.toggle("on", n === k % imgs.length));
+    list.forEach(src => {
+      const i = el("img"); i.alt = r.title; i.loading = "lazy";
+      i.onerror = () => { i.remove(); if (!imgs.length) show.remove(); else paint(); };
+      i.src = src; show.appendChild(i);
+    });
+    paint();
+    if (list.length > 1 && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const t = setInterval(() => { if (!card.isConnected) return clearInterval(t); k++; paint(); }, 1500);
+    }
+    card.appendChild(show);
+  }
+  return card;
+}
+  function reward(r) {
+    stage.innerHTML = "";
+    const w = el("div", "fade"), b = el("button", "main", "Seguir em frente"); b.onclick = next;
+    w.append(el("p", "muted", "Porta aberta."), rewardCard(r), b);
+    stage.appendChild(w);
+  }
+
+  function maze() {
+    const N = 15, S = 600, C = S / N;
+    const walls = Array.from({ length: N * N }, () => [1, 1, 1, 1]); // cima, direita, baixo, esquerda
+    const dl = [-N, 1, N, -1], seen = new Set([0]), stack = [0];
+    while (stack.length) {
+      const c = stack[stack.length - 1], x = c % N, opts = [];
+      [0, 1, 2, 3].forEach(d => {
+        const n = c + dl[d];
+        if (n < 0 || n >= N * N || (d === 1 && x === N - 1) || (d === 3 && x === 0) || seen.has(n)) return;
+        opts.push(d);
+      });
+      if (!opts.length) { stack.pop(); continue; }
+      const d = opts[Math.floor(Math.random() * opts.length)], n = c + dl[d];
+      walls[c][d] = 0; walls[n][(d + 2) % 4] = 0; seen.add(n); stack.push(n);
+    }
+    let pos = 0; const trail = new Set([0]);
+    const cv = el("canvas"); cv.width = cv.height = S; cv.setAttribute("aria-label", "Labirinto");
+    const ctx = cv.getContext("2d");
+    function draw(broken) {
+      ctx.clearRect(0, 0, S, S);
+      trail.forEach(c => { ctx.fillStyle = "rgba(255,181,158,.18)"; ctx.fillRect((c % N) * C + 4, Math.floor(c / N) * C + 4, C - 8, C - 8); });
+      ctx.strokeStyle = "#7f90d6"; ctx.lineWidth = 4; ctx.lineCap = "round"; ctx.beginPath();
+      walls.forEach((w, c) => {
+        const x = (c % N) * C, y = Math.floor(c / N) * C;
+        if (w[0]) { ctx.moveTo(x, y); ctx.lineTo(x + C, y); }
+        if (w[1]) { ctx.moveTo(x + C, y); ctx.lineTo(x + C, y + C); }
+        if (w[2]) { ctx.moveTo(x, y + C); ctx.lineTo(x + C, y + C); }
+        if (w[3]) { ctx.moveTo(x, y); ctx.lineTo(x, y + C); }
+      });
+      ctx.stroke();
+      ctx.font = (C * .6) + "px serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      const hx = (N - .5) * C, hy = (N - .5) * C + 2; ctx.fillStyle = "#ff7a90";
+      if (!broken) ctx.fillText("\u2665", hx, hy);
+      else [-1, 1].forEach(k => {
+        ctx.save(); ctx.beginPath(); ctx.rect(k < 0 ? hx - C : hx, hy - C, C, 2 * C); ctx.clip();
+        ctx.translate(hx + k * 6, hy + 4); ctx.rotate(k * .18); ctx.fillText("\u2665", 0, 0); ctx.restore();
+      });
+      ctx.fillStyle = "#ffb59e"; ctx.beginPath();
+      ctx.arc((pos % N + .5) * C, (Math.floor(pos / N) + .5) * C, C * .3, 0, 7); ctx.fill();
+    }
+    function move(d) {
+      if (!mazeOn || walls[pos][d]) return;
+      pos += dl[d]; trail.add(pos); draw();
+      if (pos === N * N - 1) { mazeOn = false; stop(); if (pranked) setTimeout(next, 600); else prank(); }
+    }
+    function prank() {
+      pranked = true; try { localStorage.setItem("pranked", "1"); } catch (e) {}
+      setTimeout(() => {
+        const o = el("div", "crush"), h = el("div", "heart"), m = el("div", "msg");
+        const svg = c => '<svg class="' + c + '" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>';
+        h.innerHTML = svg("a") + svg("b");
+        const t = el("p", "big", "Ya no te gusto :("), b = el("button", "main", "Começar de novo");
+        o.setAttribute("role", "alertdialog"); o.setAttribute("aria-label", "Ya no me gostas");
+        b.onclick = () => { o.remove(); document.body.style.overflow = ""; render(); };
+        m.append(t, b); o.append(h, m); document.body.appendChild(o); document.body.style.overflow = "hidden";
+        setTimeout(() => { try { navigator.vibrate && navigator.vibrate([80, 50, 160]); } catch (e) {} }, 900);
+        setTimeout(() => b.focus(), 2200);
+      }, 450);
+    }
+    const pad = el("div", "pad"), hold = {};
+    const stop = () => { clearTimeout(hold.t); clearInterval(hold.i); };
+    [["u", "\u25B2", 0, "Cima"], ["l", "\u25C0", 3, "Esquerda"], ["d", "\u25BC", 2, "Baixo"], ["r", "\u25B6", 1, "Direita"]].forEach(([k, sym, d, a]) => {
+      const b = el("button", k, sym); b.setAttribute("aria-label", a);
+      b.onpointerdown = e => { e.preventDefault(); stop(); move(d); hold.t = setTimeout(() => { hold.i = setInterval(() => move(d), 110); }, 320); };
+      b.onpointerup = b.onpointerleave = b.onpointercancel = stop;
+      b.oncontextmenu = e => e.preventDefault();
+      b.onclick = e => { if (e.detail === 0) move(d); };
+      pad.appendChild(b);
+    });
+    let ax = 0, ay = 0;
+    cv.ontouchstart = e => { ax = e.touches[0].clientX; ay = e.touches[0].clientY; };
+    cv.ontouchmove = e => {
+      const t = e.touches[0], dx = t.clientX - ax, dy = t.clientY - ay;
+      const thr = Math.max(14, cv.getBoundingClientRect().width / N * .9);
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < thr) return;
+      move(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 1 : 3) : (dy > 0 ? 2 : 0));
+      ax = t.clientX; ay = t.clientY;
+    };
+    const w = el("div", "fade");
+    w.append(el("h2", "", "Último jogo!"), el("p", "muted", "Leva o ponto até ao coração. Arrasta o dedo pelo labirinto ou mantém as setas premidas."), cv, pad);
+    stage.appendChild(w); mazeOn = true; draw();
+    window.onkeydown = e => { const d = { ArrowUp: 0, ArrowRight: 1, ArrowDown: 2, ArrowLeft: 3 }[e.key]; if (d != null) { e.preventDefault(); move(d); } };
+  }
+
+  let timer;
+  function final() {
+    const w = el("div", "fade"), big = el("p", "big"), sm = el("p", "muted");
+    const tick = () => {
+      const t = Math.max(0, Math.floor((Date.now() - startDate) / 1000));
+      big.textContent = Math.floor(t / 86400).toLocaleString("pt-PT") + " dias";
+      sm.textContent = "e " + Math.floor(t % 86400 / 3600) + " h, " + Math.floor(t % 3600 / 60) + " min, " + (t % 60) + " s juntos.";
+    };
+    tick(); timer = setInterval(tick, 1000);
+    w.append(big, sm);
+    const sec = (title, ...kids) => { const x = el("section", "section"); x.append(el("h2", "", title), ...kids); w.appendChild(x); return x; };
+
+    const body = el("p", "", finalBody); body.style.whiteSpace = "pre-line";
+    sec(finalTitle, body);
+    sec("O nosso caminho...", ...levels.map(L => rewardCard(L.reward)));
+
+    const box = el("div");
+    things.forEach(x => { const d = el("details"); d.append(el("summary", "", x.t), el("p", "", x.d)); box.appendChild(d); });
+    if (things.length) sec("Pequenas coisas", box);
+
+    if (gallery.length) {
+      const g = el("div", "gallery"), x = sec("Alguns dos nossos momentos", g);
+      gallery.forEach(src => {
+        const i = el("img"); i.alt = ""; i.loading = "lazy";
+        i.onerror = () => { i.remove(); if (!g.children.length) x.remove(); };
+        i.src = src; g.appendChild(i);
+      });
+    }
+
+    if (playlistUrl) {
+      const a = el("a", "pill", "Ouvir playlist"); a.href = playlistUrl; a.target = "_blank"; a.rel = "noopener";
+      sec("A nossa banda sonora", a);
+    }
+
+    const b = el("button", "link", "Voltar ao início"); b.style.marginTop = "3rem";
+    b.onclick = () => { step = 0; started = false; save(); render(); };
+    w.appendChild(b); stage.appendChild(w);
+  }
+
+  render();
+</script>
+</body>
+</html>
